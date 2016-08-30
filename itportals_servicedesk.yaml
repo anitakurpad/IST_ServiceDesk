@@ -1,9 +1,9 @@
 name: itportals-servicedesk
-namespace: com.bigcorp.itportals.stylebooks
+namespace: com.acme-corp.stylebooks
 version: "1.0"
-display-name: "LB Configuration for the ServiceDesk App in the ITPortals group"
+display-name: "ITPortals ServiceDesk"
 description: |
-  This StyleBook is a NetScaler configuration template for the ServiceDesk App written by the ITPortals group on 05/12/2016.
+  NetScaler configuration for the ServiceDesk App
 schema-version: "1.0"
 import-stylebooks: 
   - 
@@ -18,40 +18,35 @@ import-stylebooks:
     namespace: com.citrix.adc.commontypes
     version: "1.0"
     prefix: cmtypes
-types:
-  - name: name
-    type: string
 parameters:
   - 
+    name: name
+    label: "Name"
+    description: "Give the configuration a name"
+    type: string
+    required: true
+    key: true
+  - 
     name: vip
-    label: "ServiceDesk Virtual IP address"
+    label: "Application Virtual IP address"
     description: "The VIP IP that front-ends this app"
     type: ipaddress
     required: true
   -
-    name: protocol
-    label: "Application Protocol"
-    description: "Application Protocol used by Clients to connect to the VIP"
-    type: string
-    allowed-values:
-      - HTTP
-      - SSL
-    default: HTTP
-  -
     name: certificate
     label: "VIP Certificate File"
     description: "The file path of the server certificate used on this VIP"
-    type: string
+    type: certfile
   -
     name: key
     label: "VIP Certificate Key File"
     description: "The file path of the server certificate's private key used on this VIP"
-    type: string
+    type: keyfile
   -
     name: ca-certificate
     label: "VIP CA Certificate File"
     description: "The file path of the CA certificate used to sign the server certificate"
-    type: string
+    type: certfile
   - 
     name: server-pools
     label: "Server Pools"
@@ -86,8 +81,8 @@ parameters:
     default: 20
 substitutions:
   cs-port[]:
-    true: int("80")
-    false: int("443")
+    HTTP: int("80")
+    SSL: int("443")
 components:
   -
     name: cs-default-lb
@@ -102,8 +97,8 @@ components:
     properties:
       appname: cs-app
       cs-virtual-ip: $parameters.vip
-      cs-virtual-port: $substitutions.cs-port($parameters.protocol == "HTTP")
-      cs-service-type: $parameters.protocol
+      cs-virtual-port: $substitutions.cs-port("HTTP")
+      cs-service-type: SSL
       default-lb-pool:
         lb-appname: $pool.pool-name
         lb-service-type: HTTP
@@ -134,8 +129,8 @@ components:
     properties:
       appname: cs-app
       cs-virtual-ip: $parameters.vip
-      cs-virtual-port: $substitutions.cs-port($parameters.protocol == "HTTP")
-      cs-service-type: $parameters.protocol
+      cs-virtual-port: $substitutions.cs-port("HTTP")
+      cs-service-type: "SSL"
       default-lb-pool?: $components.cs-default-lb.properties.default-lb-pool
       pools:
         -
@@ -154,14 +149,14 @@ components:
                 interval: $parameters.monitor-interval
                 interval_units: SEC
                 retries: 3
-          rule: $pool.rule
+          rule: "true"
           priority: $ndx+1
   -
     name: cs-server-certificate
     type: stlb::vserver-certs-binds
     description: |
       Binds csvserver with server certificate
-    condition: ($parameters.protocol == "SSL") and $parameters.server-pools and $parameters.certificate and $parameters.key
+    condition: $parameters.server-pools and $parameters.certificate and $parameters.key
     properties:
       vserver-name: $components.cs-pools.outputs.csvserver.properties.name
       certificates:
@@ -176,7 +171,7 @@ components:
     type: stlb::vserver-certs-binds
     description: |
       Binds csvserver with CA certificate
-    condition: ($parameters.protocol == "SSL") and $parameters.server-pools and $parameters.ca-certificate
+    condition: $parameters.server-pools and $parameters.ca-certificate
     properties:
       vserver-name: $components.cs-pools.outputs.csvserver.properties.name
       certificates:
