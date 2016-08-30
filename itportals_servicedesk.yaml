@@ -1,12 +1,9 @@
-name: sample-cs-app
-namespace: com.acme-corp.stylebooks
+name: itportals-servicedesk
+namespace: com.bigcorp.itportals.stylebooks
 version: "1.0"
-display-name: "Sample Application StyleBook using CS, LB and SSL features"
+display-name: "LB Configuration for the ServiceDesk App in the ITPortals group"
 description: |
-  This StyleBook is an example that shows using the base cs-lb-mon StyleBook to create
-  a content-switching app with SSL Offload and a monitor suited to this app. 
-  This StyleBook also assumes that the app listens on port 443 for SSL or 
-  port 80 for HTTP. App servers listen on port 80.
+  This StyleBook is a NetScaler configuration template for the ServiceDesk App written by the ITPortals group on 05/12/2016.
 schema-version: "1.0"
 import-stylebooks: 
   - 
@@ -27,7 +24,7 @@ types:
 parameters:
   - 
     name: vip
-    label: "Application Virtual IP address"
+    label: "ServiceDesk Virtual IP address"
     description: "The VIP IP that front-ends this app"
     type: ipaddress
     required: true
